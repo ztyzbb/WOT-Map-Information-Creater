@@ -28,7 +28,7 @@ namespace WOT地图对照生成
             Console.WriteLine("*                    具体使用方法详见Readme.md                      *");
             Console.WriteLine("*                         本软件遵循GPLv3协议                       *");
             Console.WriteLine("*                           祝您使用愉快！                          *");
-            Console.WriteLine("*                      ztyzbb 2016.11.02 敬上！                     *");
+            Console.WriteLine("*                      ztyzbb 2016.11.03 敬上！                     *");
             Console.WriteLine("*********************************************************************");
 
             Console.Write("请输入坦克世界安装目录（如C:\\Games\\World_of_Tanks）：");
@@ -136,18 +136,19 @@ namespace WOT地图对照生成
             Console.WriteLine("0.json");
             Console.WriteLine("1.excel");
             Console.Write("输入任意值以使用excel,直接回车以使用json");
+            int mapcounter = 0,namecounter=0;
             if (Console.ReadLine().Length == 0)
             {
                 JArray data = new JArray();
                 XmlNode root = xml.SelectSingleNode("_list_.xml");
                 XmlNodeList maps = root.ChildNodes;
-                int i = 0;
+                
                 foreach (XmlNode currentmap in maps)
                 {
                     data.Add(new JObject());
-                    data[i]["mapid"] = Int32.Parse(currentmap.SelectSingleNode("id").FirstChild.Value.Remove(0, 1));
-                    data[i]["mapidname"] = currentmap.SelectSingleNode("name").FirstChild.Value;
-                    i++;
+                    data[mapcounter]["mapid"] = Int32.Parse(currentmap.SelectSingleNode("id").FirstChild.Value.Remove(0, 1));
+                    data[mapcounter]["mapidname"] = currentmap.SelectSingleNode("name").FirstChild.Value;
+                    mapcounter++;
                 }
                 using (StreamReader file = new StreamReader("arenas.po"))
                 {
@@ -170,6 +171,8 @@ namespace WOT地图对照生成
                                 line = line.Remove(0, 8);
                                 line = line.Remove(line.Length - 1);
                                 data[j]["mapname"] = line;
+                                namecounter++;
+                                break;
                             }
                         }
                     }
@@ -193,7 +196,7 @@ namespace WOT地图对照生成
                 Excel.Application excelapp;
                 Excel.Workbook excelbook;
                 Excel.Worksheet excelsheet;
-                int i = 0;
+                
                 try
                 {
                     Object Nothing = System.Reflection.Missing.Value;
@@ -206,9 +209,9 @@ namespace WOT地图对照生成
 
                     foreach (XmlNode currentmap in maps)
                     {
-                        i++;
-                        excelsheet.Cells[i, 1].Value = Int32.Parse(currentmap.SelectSingleNode("id").FirstChild.Value.Remove(0, 1));
-                        excelsheet.Cells[i, 2].Value = currentmap.SelectSingleNode("name").FirstChild.Value;
+                        mapcounter++;
+                        excelsheet.Cells[mapcounter, 1].Value = Int32.Parse(currentmap.SelectSingleNode("id").FirstChild.Value.Remove(0, 1));
+                        excelsheet.Cells[mapcounter, 2].Value = currentmap.SelectSingleNode("name").FirstChild.Value;
                     }
                 }
                 catch (Exception e)
@@ -230,7 +233,7 @@ namespace WOT地图对照生成
                         line = line.Remove(0, 7);
                         line = line.Remove(line.Length - 1);
                         line = line.Split('/')[0];
-                        for (int j = 1; j <= i; j++)
+                        for (int j = 1; j <= mapcounter; j++)
                         {
                             if (excelsheet.Cells[j, 2].Value == line)
                             {
@@ -238,6 +241,7 @@ namespace WOT地图对照生成
                                 line = line.Remove(0, 8);
                                 line = line.Remove(line.Length - 1);
                                 excelsheet.Cells[j, 3].Value = line;
+                                namecounter++;
                                 break;
                             }
                         }
@@ -247,10 +251,15 @@ namespace WOT地图对照生成
                 excelbook.Close();
                 excelapp.Quit();
             }
+            Console.WriteLine();
+            if (namecounter != mapcounter)
+                Console.WriteLine("检测到潜在的数据缺失！请手动检查导出的文件！");
             Console.WriteLine("文件已经导出到" + Directory.GetCurrentDirectory());
             Console.WriteLine("如要保留arenas.po，请输入任意值，否则直接回车");
             if (Console.ReadLine().Length == 0)
                 File.Delete("arenas.po");
+            Console.WriteLine("完成！ztyzbb于2016.11.02敬上！");
+            Console.ReadLine();
             return 0;
         }
     }
